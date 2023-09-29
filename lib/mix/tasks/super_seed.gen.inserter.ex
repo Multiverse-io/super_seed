@@ -2,7 +2,6 @@ defmodule Mix.Tasks.SuperSeed.Gen.Inserter do
   use Mix.Task
   alias Mix.Generator
 
-  # def run([table_name]) do
   def run(args) do
     case parse_args(args) do
       {table_name, inserter_name} ->
