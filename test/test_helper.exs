@@ -1,0 +1,5 @@
+Mimic.copy(File)
+Mimic.copy(System)
+Mimic.copy(Mix.Project)
+Mimic.copy(SuperSeed.SuperSeed.Setup)
+ExUnit.start()
