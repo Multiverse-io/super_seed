@@ -1,6 +1,6 @@
 # SuperSeed
 
-**TODO: Add description**
+A tool for parallelising seed data insertion into a database with Ecto.
 
 ## Installation
 

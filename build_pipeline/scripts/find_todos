@@ -1,0 +1,10 @@
+#!/bin/bash
+
+find_result=$(git grep TODO -- './*' ':!build' ':!build_pipeline/scripts/find_todos' ':!build_pipeline/config.json' ':!.credo.exs')
+result=$?
+if [ $result -eq 0 ]; then
+  echo "TODO found in:"
+  echo "$find_result" | while read -r res; do echo " - $res"; done
+  exit 1
+fi
+

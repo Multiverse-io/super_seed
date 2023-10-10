@@ -1,6 +1,7 @@
 defmodule Mix.Tasks.SuperSeed.Gen.Inserter do
   use Mix.Task
   alias Mix.Generator
+  alias SuperSeed.{ApplicationRootNamespace, SystemHalt}
 
   def run(args) do
     case parse_args(args) do
@@ -12,7 +13,7 @@ defmodule Mix.Tasks.SuperSeed.Gen.Inserter do
         Generator.create_file(file_name, contents)
 
       :error ->
-        System.halt(1)
+        SystemHalt.halt(1)
     end
   end
 
@@ -39,9 +40,10 @@ defmodule Mix.Tasks.SuperSeed.Gen.Inserter do
   defp make_file_contents(table_name, inserter_name) do
     camelised_table_name = Macro.camelize(table_name)
     camelised_inserter_name = Macro.camelize(inserter_name)
+    app_module = ApplicationRootNamespace.determine_from_mix_project()
 
     """
-    defmodule #{app_module()}.SuperSeed.Inserters.Tables.#{camelised_table_name}.#{camelised_inserter_name} do
+    defmodule #{app_module}.SuperSeed.Inserters.Tables.#{camelised_table_name}.#{camelised_inserter_name} do
      @behaviour SuperSeed.Inserter
 
      @impl true
@@ -60,26 +62,5 @@ defmodule Mix.Tasks.SuperSeed.Gen.Inserter do
      end
     end
     """
-  end
-
-  defp app_module do
-    Mix.Project.config()
-    |> Keyword.get(:app)
-    |> case do
-      nil ->
-        raise """
-        I failed to run because I could not find the name of your app.
-        I depend on being able to find the name of the app so that I can namespace the SuperSeed.Inserter file that I want to create correctly!
-
-        Maybe you're not in a mix project?
-
-        You're kind of on your own here! Sorry! Good luck!
-        """
-
-      app ->
-        app
-        |> to_string()
-        |> Macro.camelize()
-    end
   end
 end

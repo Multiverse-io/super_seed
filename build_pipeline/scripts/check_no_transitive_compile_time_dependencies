@@ -1,0 +1,45 @@
+#!/bin/bash
+
+xref_command="MIX_ENV=test mix xref graph --label compile-connected"
+output=$(eval "$xref_command 2>&1")
+
+IFS=$'\n' read -rd '' -a lines <<<"$output"
+
+regex="^lib.*"
+
+count=0
+print_next_line=false
+
+for line in "${lines[@]}"
+do
+  if [[ $line =~ $regex ]]; then
+    count=$((count+1))
+    print_next_line=true
+    echo $line
+  elif [[ $print_next_line == true ]]; then
+    echo $line
+    print_next_line=false
+  fi
+done
+
+if  [[ $(($count)) -gt 0 ]]; then
+  echo -e "\n***********************************************************************************"
+  echo "Transitive compile time dependencies in lib (that are not in the exclusion list):"
+  echo -e "***********************************************************************************\n"
+  echo -e "\n***********************************************************************************"
+  echo -e "\033[31m\nI found $count transitive compile time dependencies (TCTD) in lib/ (that are not in the exclusion list) so im failing the build :(((((\n\033[0m"
+  echo -e "It's highly likely you didn't mean to add this TCTD, in which case you should remove it following the advice below\n"
+  echo -e "In the (unlikely?) event that you think this case warrants keeping the TCTD, you can add it to the exclusion list in this script, but only do so if you really are confident that this is a special case, because TCTDs slow down recompilation times!\n"
+  echo -e "How to remove TCTDs:\n"
+  echo -e "These occur when a module, A, has a compile time dependency on module B (e.g. by doing @foo B.bar()), and in turn module B has a runtime dependency on module C."
+  echo -e "In this scenario, we say that module A has a transitive compile time dependency on module C"
+  echo -e "The way to fix this is to remove runtime dependencies from any module which is itself a compile time dependee (module B in our example)\n"
+  echo -e "Here's some extra information \n"
+  echo -e "- https://medium.com/multiverse-tech/how-to-speed-up-your-elixir-compile-times-part-1-understanding-elixir-compilation-64d44a32ec6e"
+  echo -e "- https://www.youtube.com/watch?v=kTHou0IVvFM\n"
+  echo -e "If you find yourself running this script over and over trying to see if you've fixed your TCTD yet, then don't! Instead run the script that exists for that exact purpose\n"
+  echo -e "./scripts/transitive_compile_time_removal_helper\n"
+  exit 1
+else
+  echo "no transitive compile time dependencies. noice one"
+fi

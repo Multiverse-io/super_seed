@@ -3,15 +3,18 @@ defmodule Mix.Tasks.SuperSeed.Gen.InserterTest do
   use Mimic
   import ExUnit.CaptureIO
   alias Mix.Tasks.SuperSeed.Gen.Inserter
+  alias SuperSeed.{ApplicationRootNamespace, SystemHalt}
 
   describe "run/1" do
     test "given the minimum valid args, generates a new inserter file" do
+      Mimic.expect(ApplicationRootNamespace, :determine_from_mix_project, fn -> "CoolApp" end)
+
       Mimic.expect(File, :write!, fn path, contents ->
         assert path == "lib/super_seed/inserters/tables/users/users.ex"
 
         assert contents ==
                  """
-                 defmodule SuperSeed.SuperSeed.Inserters.Tables.Users.Users do
+                 defmodule CoolApp.SuperSeed.Inserters.Tables.Users.Users do
                   @behaviour SuperSeed.Inserter
 
                   @impl true
@@ -50,12 +53,14 @@ defmodule Mix.Tasks.SuperSeed.Gen.InserterTest do
     end
 
     test "given a table_name and inserter_name, generates the expected file contents" do
+      Mimic.expect(ApplicationRootNamespace, :determine_from_mix_project, fn -> "CoolApp" end)
+
       Mimic.expect(File, :write!, fn path, contents ->
         assert path == "lib/super_seed/inserters/tables/cheesy_table_name/yorkshire_cheddar.ex"
 
         assert contents ==
                  """
-                 defmodule SuperSeed.SuperSeed.Inserters.Tables.CheesyTableName.YorkshireCheddar do
+                 defmodule CoolApp.SuperSeed.Inserters.Tables.CheesyTableName.YorkshireCheddar do
                   @behaviour SuperSeed.Inserter
 
                   @impl true
@@ -85,7 +90,7 @@ defmodule Mix.Tasks.SuperSeed.Gen.InserterTest do
     end
 
     test "given bad args, prints an error message and exits" do
-      Mimic.expect(System, :halt, fn _code -> :ok end)
+      Mimic.expect(SystemHalt, :halt, fn exit_code -> assert exit_code == 1 end)
       Mimic.reject(&File.write!/2)
       Mimic.reject(&File.mkdir_p!/1)
 
@@ -108,16 +113,7 @@ defmodule Mix.Tasks.SuperSeed.Gen.InserterTest do
       Mimic.reject(&File.write!/2)
       Mimic.reject(&File.mkdir_p!/1)
 
-      error_msg = """
-      I failed to run because I could not find the name of your app.
-      I depend on being able to find the name of the app so that I can namespace the SuperSeed.Inserter file that I want to create correctly!
-
-      Maybe you're not in a mix project?
-
-      You're kind of on your own here! Sorry! Good luck!
-      """
-
-      assert_raise RuntimeError, error_msg, fn -> Inserter.run(["users"]) end
+      assert_raise RuntimeError, fn -> Inserter.run(["users"]) end
     end
   end
 end

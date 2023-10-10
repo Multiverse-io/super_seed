@@ -11,4 +11,3 @@ defmodule SuperSeed.TestSetups.Noop do
     :ok
   end
 end
-

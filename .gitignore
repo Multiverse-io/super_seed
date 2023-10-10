@@ -24,3 +24,6 @@ super_seed-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# build_pipeline
+build_pipeline/previous_run_result.json

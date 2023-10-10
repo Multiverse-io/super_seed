@@ -1,0 +1,92 @@
+[
+  {
+    "buildStepName": "find TODOs",
+    "commandType": "script",
+    "command": "find_todos",
+    "dependsOn": []
+  },
+  {
+    "buildStepName": "fetch dependencies",
+    "commandType": "script",
+    "command": "fetch_dependencies",
+    "dependsOn": []
+  },
+  {
+    "buildStepName": "check for incorrect test extension",
+    "commandType": "script",
+    "command": "check_for_incorrect_test_extension",
+    "dependsOn": []
+  },
+  {
+    "buildStepName": "mix compile --force --warnings-as-errors",
+    "command": "mix compile --force --warnings-as-errors",
+    "commandType": "shellCommand",
+    "dependsOn": [
+      "fetch dependencies"
+    ],
+    "envVars": [
+      {
+        "name": "MIX_ENV",
+        "value": "test"
+      }
+    ]
+  },
+  {
+    "buildStepName": "check no transitive compile time dependencies",
+    "command": "check_no_transitive_compile_time_dependencies",
+    "commandType": "script",
+    "dependsOn": [
+      "mix compile --force --warnings-as-errors"
+    ]
+  },
+  {
+    "buildStepName": "mix format --check-formatted",
+    "command": "mix format --check-formatted",
+    "commandType": "shellCommand",
+    "dependsOn": [
+      "mix compile --force --warnings-as-errors"
+    ],
+    "envVars": [
+      {
+        "name": "MIX_ENV",
+        "value": "test"
+      }
+    ]
+  },
+  {
+    "buildStepName": "mix sobelow --config",
+    "command": "mix sobelow --config",
+    "commandType": "shellCommand",
+    "dependsOn": [
+      "mix compile --force --warnings-as-errors"
+    ],
+    "envVars": [
+      {
+        "name": "MIX_ENV",
+        "value": "test"
+      }
+    ]
+  },
+  {
+    "buildStepName": "mix credo",
+    "command": "mix credo",
+    "commandType": "shellCommand",
+    "dependsOn": [
+      "mix compile --force --warnings-as-errors"
+    ],
+    "envVars": [
+      {
+        "name": "MIX_ENV",
+        "value": "test"
+      }
+    ]
+  },
+  {
+    "buildStepName": "mix test",
+    "command": "mix test",
+    "commandType": "shellCommand",
+    "dependsOn": [
+      "mix compile --force --warnings-as-errors"
+    ]
+  }
+]
