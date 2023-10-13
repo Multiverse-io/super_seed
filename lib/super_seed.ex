@@ -1,69 +1,56 @@
 defmodule SuperSeed do
   require Logger
-
-  alias SuperSeed.Checks
+  alias SuperSeed.{SetupModuleFinder, InsertersNamespaceFinder, InserterModules}
 
   def run do
-    case setup_module() do
-      {:ok, module} ->
-        setup_result = module.setup()
-        module.teardown(setup_result)
+    %{inserters_namespace: inserters_namespace, setup_module: setup_module} = setup()
+    setup_result = setup_module.setup()
+    {:ok, _server_pid} = Server.start_link(self(), inserters_namespace)
 
-      :error ->
-        raise """
-        I need a "Setup" module to run, but I couldn't find one.
+    timeout = 480_000
 
-        You have two options but I reccomend the first:
-
-        1) Run `mix super_seed.init` to generate a new setup module
-        2) Add some super_seed config to your config file
-
-        Read the README for more details
-        """
+    receive do
+      :server_done ->
+        # Logger.debug("#{inspect(__MODULE__)} recieved :server_done")
+        :ok
+    after
+      timeout ->
+        raise "Reseeding the database timed out after #{timeout}ms"
     end
+
+    setup_module.teardown(setup_result)
+    :ok
   end
 
-  defp setup_module do
-    Enum.reduce_while(setup_module_getters(), nil, fn setup_module_getter, _acc ->
-      case setup_module_getter.() do
-        {:ok, module} -> {:halt, {:ok, module}}
-        other -> {:cont, other}
+  defp setup do
+    Enum.reduce_while(setup_functions(), %{}, fn {key, setup_fun, error_msg}, acc ->
+      case setup_fun.() do
+        {:ok, result} ->
+          {:cont, Map.put(acc, key, result)}
+
+        _ ->
+          {:halt, raise(error_msg)}
       end
     end)
   end
 
-  defp setup_module_getters do
-    [&config_setup_module/0, &default_setup_module/0]
+  defp setup_functions do
+    [
+      {:setup_module, &SetupModuleFinder.find/0, setup_module_error_msg()},
+      {:inserters_namespace, &InsertersNamespaceFinder.find/0, "some error"}
+    ]
   end
 
-  defp config_setup_module do
-    module =
-      :super_seed
-      |> Application.get_env(:setup, [])
-      |> Keyword.get(:module)
+  defp setup_module_error_msg do
+    """
+    I need a "Setup" module to run, but I couldn't find one.
 
-    if module do
-      Logger.info("[SuperSeed] Using the setup module defined in config: #{inspect(module)}")
-      {:ok, module}
-    else
-      :error
-    end
-  end
+    You have two options but I reccomend the first:
 
-  defp default_setup_module do
-    app_module =
-      Mix.Project.config()
-      |> Keyword.get(:app)
-      |> to_string()
-      |> Macro.camelize()
+    1) Run `mix super_seed.init` to generate a new setup module
+    2) Add some super_seed config to your config file
 
-    module = :"Elixir.#{app_module}.SuperSeed.Setup"
-
-    if Checks.ensure_compiled(module) do
-      Logger.info("[SuperSeed] Using the setup module: #{inspect(module)}")
-      {:ok, module}
-    else
-      :error
-    end
+    Read the README for more details
+    """
   end
 end
