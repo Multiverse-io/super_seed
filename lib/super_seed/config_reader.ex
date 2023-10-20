@@ -18,7 +18,7 @@ defmodule SuperSeed.ConfigReader do
 
           I'm missing the key: #{inspect(key)}
 
-          Maybe you reread the README bit about adding some config?
+          Maybe reread the README bit about adding some config?
           """
 
         value ->

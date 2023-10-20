@@ -39,7 +39,7 @@ defmodule SuperSeed.ConfigReaderTest do
 
       I'm missing the key: :app
 
-      Maybe you reread the README bit about adding some config?
+      Maybe reread the README bit about adding some config?
       """
 
       assert_raise RuntimeError, error_msg, &ConfigReader.read/0
@@ -53,7 +53,7 @@ defmodule SuperSeed.ConfigReaderTest do
 
       I'm missing the key: :repo
 
-      Maybe you reread the README bit about adding some config?
+      Maybe reread the README bit about adding some config?
       """
 
       assert_raise RuntimeError, error_msg, &ConfigReader.read/0
