@@ -5,4 +5,6 @@ defmodule SuperSeed.Checks do
   """
 
   def ensure_compiled(module), do: Code.ensure_compiled(module)
+  def code_all_loaded, do: :code.all_loaded()
+  def application_get_env(app, key), do: Application.get_env(app, key)
 end

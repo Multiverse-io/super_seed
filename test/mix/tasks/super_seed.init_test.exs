@@ -62,11 +62,12 @@ defmodule Mix.Tasks.SuperSeed.InitTest do
 
       Mimic.expect(ApplicationRootNamespace, :determine_from_mix_project, fn -> "CoolApp" end)
 
-      capture_io(fn -> Init.run() end)
+      Init.run()
+      # capture_io(fn -> Init.run() end)
     end
 
     test "exists if we can't figure out your app name my running Mix.Project.config() & prints an error on the screen" do
-      Mimic.expect(ApplicationRootNamespace, :determine_from_mix_project, fn -> raise "error" end)
+      # Mimic.expect(ApplicationRootNamespace, :determine_from_mix_project, fn -> raise "error" end)
 
       Mimic.reject(File, :exists?, 1)
       Mimic.reject(File, :mkdir_p!, 1)

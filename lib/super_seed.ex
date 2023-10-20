@@ -1,11 +1,17 @@
 defmodule SuperSeed do
   require Logger
-  alias SuperSeed.{SetupModuleFinder, InsertersNamespaceFinder, InserterModules}
+  alias SuperSeed.{SetupModuleFinder, InsertersNamespaceFinder, InserterModules, Server}
 
   def run do
+    Application.get_env(:super_seed, :setup)
+    |> IO.inspect()
+
+    raise "no"
+
     %{inserters_namespace: inserters_namespace, setup_module: setup_module} = setup()
     setup_result = setup_module.setup()
-    {:ok, _server_pid} = Server.start_link(self(), inserters_namespace)
+    inserters = InserterModules.find(inserters_namespace)
+    {:ok, _server_pid} = Server.start_link(self(), inserters)
 
     timeout = 480_000
 

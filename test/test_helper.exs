@@ -1,8 +1,10 @@
+# TODO delete a whole bunch of these??
 Mimic.copy(File)
 Mimic.copy(SuperSeed.SystemHalt)
 Mimic.copy(SuperSeed.Checks)
 Mimic.copy(SuperSeed.SetupModuleFinder)
 Mimic.copy(SuperSeed.InsertersNamespaceFinder)
+Mimic.copy(SuperSeed.InserterModules)
 Mimic.copy(SuperSeed.TestSetups.Simple)
 Mimic.copy(SuperSeed.ApplicationRootNamespace)
 Mimic.copy(Mix.Project)

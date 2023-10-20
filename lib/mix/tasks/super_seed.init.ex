@@ -1,9 +1,12 @@
 defmodule Mix.Tasks.SuperSeed.Init do
   use Mix.Task
   require Mix.Generator
-  alias SuperSeed.ApplicationRootNamespace
+  alias SuperSeed.{ApplicationRootNamespace, ConfigReader}
 
   def run(_args \\ []) do
+    ConfigReader.read()
+    |> IO.inspect()
+
     app_module = ApplicationRootNamespace.determine_from_mix_project()
     Mix.Generator.create_directory("lib/super_seed")
     Mix.Generator.create_directory("lib/super_seed/inserters")
